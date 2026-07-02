@@ -1,35 +1,55 @@
 import tkinter as tk
-import threading, pyautogui, time, random
+import threading, pyautogui, time, random, os, sys
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 running = False
 mode = None
 
-INTERVAL = 240  # 4 minutes
+INTERVAL = 5
+KEYS = ["ctrl", "shift", "up", "down", "left", "right"]
 
 def worker():
     global running
 
     while running:
-        if mode == "click":
+        if mode == "mouse":
             pyautogui.click()
-            print("Clicked")
+            print("Mouse Clicked")
 
-        elif mode == "right_click":
-            pyautogui.rightClick()
-            print("Right Clicked")
-        
-        elif mode == "move":
-            pyautogui.moveTo(500, 300, duration=0.5)
-            print("Moved to (500, 300)")
+        elif mode == "keyboard":
+            key = random.choice(KEYS)
+            
+            if key == "up" or key == "down":
+                for _ in range(40):
+                    pyautogui.press(key)
+                    # time.sleep(0.1)
+                
+            elif key == "left" or key == "right":
+                for _ in range(12):
+                    pyautogui.press(key)
+                    # time.sleep(0.1)
+            else:
+                pyautogui.press(key)
+    
+            print(f"Pressed: {key}")
 
-        elif mode == "random":
-            width, height = pyautogui.size()
-            x = random.randint(0, width - 1)
-            y = random.randint(0, height - 1)
-            pyautogui.moveTo(x, y, duration=0.5)
-            print(f"Moved randomly to ({x}, {y})")
+        elif mode == "both":
+            pyautogui.click()
+            key = random.choice(KEYS)
+            pyautogui.press(key)
+            print(f"Mouse Clicked + Pressed: {key}")
 
-        time.sleep(INTERVAL)
+        # Sleep in small intervals so Stop works immediately
+        for _ in range(INTERVAL):
+            if not running:
+                break
+            time.sleep(1)
 
 
 def start(selected_mode):
@@ -55,16 +75,15 @@ def exit_app():
 
 
 root = tk.Tk()
-root.title("Auto Mouse Tool")
-root.geometry("300x400")
+root.iconbitmap(resource_path("icon.ico"))
+root.title("Auto Mouse & Keyboard Clicker")
+root.geometry("300x350")
 root.resizable(True, True)
 
-tk.Label(root, text="Choose an action", font=("Arial", 12, "bold")).pack(pady=10)
-
-tk.Button(root, text="Click", width=20, command=lambda: start("click")).pack(pady=5)
-tk.Button(root, text="Right Click", width=20, command=lambda: start("right_click")).pack(pady=5)
-tk.Button(root, text="Move Cursor (500, 300)", width=20, command=lambda: start("move")).pack(pady=5)
-tk.Button(root, text="Move Cursor Randomly", width=20, command=lambda: start("random")).pack(pady=5)
+tk.Label(root, text="Choose an Action", font=("Arial", 12, "bold")).pack(pady=10)
+tk.Button(root, text="🖱 Mouse", width=20, command=lambda: start("mouse")).pack(pady=5)
+tk.Button(root, text="⌨ Keyboard", width=20, command=lambda: start("keyboard")).pack(pady=5)
+tk.Button(root, text="🖱 + ⌨ Both", width=20, command=lambda: start("both")).pack(pady=5)
 tk.Button(root, text="Stop", width=20, command=stop).pack(pady=5)
 tk.Button(root, text="Exit", width=20, command=exit_app).pack(pady=5)
 
